@@ -1,0 +1,23 @@
+<div class="search-bar-wrapper">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    class="search-icon"
+    aria-hidden="true"
+  >
+    <path
+      d="M21 21l-4.3-4.3c-.58-.58-1.52-.58-2.1 0L13 19.9l-4.31-4.31a1.72 1.72 0 0 0-2.41 1.17c-.58.58-.58 1.52 0 2.1l4.39 4.38-1.72 1.73c-.58.58-.58 1.52 0 2.1l4.26 4.32a1.72 1.72 0 0 0 1.05-.02c.58.58 1.52.58 2.1 0l4.19-4.2a1.72 1.72 0 0 0-.09-2.41L21 3z"
+    />
+  </svg>
+  <input
+    type="text"
+    placeholder="Buscar Pokémon..."
+    (keyup)="onSearchChange($event.target.value)"
+    class="search-input"
+    aria-label="Buscar Pokémon por nombre"
+  >
+</div>

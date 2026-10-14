@@ -1,0 +1,102 @@
+<div class="detail-container">
+  
+  <!-- Back Button -->
+  <button (click)="goBack()" class="back-btn" aria-label="Volver a la lista">
+    ← Volver a la Pokédex
+  </button>
+  
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="pokeball-loader"></div>
+    <p class="loading-text">Cargando Pokémon...</p>
+  </div>
+  
+  <!-- Error State -->
+  <div class="error-state" *ngIf="hasError && !isLoading">
+    <div class="error-icon">⚠️</div>
+    <p class="error-title">No se pudo cargar la información del Pokémon</p>
+    <p class="error-message">{{ errorMessage || 'Error desconocido' }}</p>
+    <div class="error-actions">
+      <button (click)="retry()" class="retry-btn">Reintentar</button>
+      <button (click)="goBack()" class="secondary-btn">Volver a la Pokédex</button>
+    </div>
+  </div>
+  
+  <!-- Pokémon Detail Card -->
+  <div class="detail-card" *ngIf="pokemon && !isLoading && !hasError">
+    
+    <!-- Header -->
+    <div class="detail-header">
+      <span class="detail-id">{{ formatPokemonId(pokemon.id) }}</span>
+      <h1 class="detail-name">{{ capitalize(pokemon.name) }}</h1>
+    </div>
+    
+    <!-- Image Section -->
+    <div class="detail-image-section">
+      <div class="image-main">
+        <img 
+          [src]="getPokemonImage(pokemon)" 
+          [alt]="pokemon.name"
+          class="main-image"
+          (error)="onImageError($event, pokemon)"
+        >
+        <div class="image-glow"></div>
+      </div>
+      
+      <!-- Type Badges -->
+      <div class="detail-types">
+        <span 
+          *ngFor="let type of pokemon.types" 
+          class="type-badge-large"
+          [style.background-color]="getTypeColor(type)"
+        >
+          {{ capitalize(type) }}
+        </span>
+      </div>
+    </div>
+    
+    <!-- Info Grid -->
+    <div class="detail-info-grid">
+      
+      <!-- Basic Info -->
+      <div class="info-section">
+        <h3 class="section-title">Información Básica</h3>
+        <div class="info-row">
+          <span class="info-label">Altura</span>
+          <span class="info-value">{{ pokemon.height / 10 }} m</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Peso</span>
+          <span class="info-value">{{ pokemon.weight / 10 }} kg</span>
+        </div>
+        <div class="info-row" *ngIf="pokemon.abilities && pokemon.abilities.length > 0">
+          <span class="info-label">Habilidades</span>
+          <span class="info-value">
+            <span *ngFor="let ab of pokemon.abilities; let last = last" class="ability-name">
+              {{ capitalize(ab.ability?.name || '') }}{{ ab.is_hidden ? ' (oculta)' : '' }}{{ !last ? ', ' : '' }}
+            </span>
+          </span>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="info-section" *ngIf="pokemon.stats && pokemon.stats.length > 0">
+        <h3 class="section-title">Estadísticas</h3>
+        <div class="stat-bar" *ngFor="let stat of pokemon.stats">
+          <div class="stat-header">
+            <span class="stat-name">{{ capitalize(stat.stat?.name || '') }}</span>
+            <span class="stat-value">{{ stat.base_stat }}</span>
+          </div>
+          <div class="stat-track">
+            <div 
+              class="stat-fill" 
+              [style.width.%]="(stat.base_stat / 255) * 100"
+              [style.background-color]="stat.base_stat > 100 ? '#4caf50' : stat.base_stat > 60 ? '#ff9800' : '#f44336'"
+            ></div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>

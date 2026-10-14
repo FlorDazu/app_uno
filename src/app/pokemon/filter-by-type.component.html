@@ -1,0 +1,10 @@
+<div class="type-filters">
+  <button 
+    *ngFor="let type of allTypes" 
+    [class.active]="selectedType === type"
+    (click)="onTypeSelect(type)"
+    class="type-button"
+  >
+    {{ type | titlecase }}
+  </button>
+</div>

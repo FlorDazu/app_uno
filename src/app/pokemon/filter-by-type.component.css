@@ -1,0 +1,23 @@
+.type-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.type-button {
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  color: var(--gray-700);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.type-button.active, .type-button:hover {
+  background: var(--primary);
+  color: white;
+}

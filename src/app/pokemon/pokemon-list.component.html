@@ -1,0 +1,177 @@
+<div class="pokedex-container">
+  
+  <!-- Header -->
+  <header class="pokedex-header">
+    <div class="header-content">
+      <div class="header-icon">⚡</div>
+      <div class="header-text">
+        <h1 class="pokedex-title">Pokédex</h1>
+        <p class="pokedex-subtitle">Explora el mundo de los Pokémon</p>
+      </div>
+      <div class="pokeball-decoration">⚪</div>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          placeholder="Buscar Pokémon por nombre..." 
+          [value]="searchTerm"
+          (input)="onSearchChange($event.target.value)"
+          class="search-input"
+          aria-label="Buscar Pokémon por nombre"
+        >
+        <button 
+          *ngIf="searchTerm" 
+          (click)="clearSearch()" 
+          class="clear-search-btn"
+          aria-label="Limpiar búsqueda"
+        >✕</button>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Type Filter Chips -->
+  <section class="type-filter-section" *ngIf="allTypes.length > 0">
+    <div class="type-filter-scroll">
+      <button 
+        class="type-chip"
+        [class.active]="!selectedType"
+        (click)="clearFilters()"
+        style="background-color: #68A090;"
+      >
+        Todos
+      </button>
+      <button 
+        *ngFor="let type of allTypes" 
+        class="type-chip"
+        [class.active]="selectedType === type"
+        [style.background-color]="getTypeColor(type)"
+        (click)="onTypeFilterChange(type)"
+      >
+        {{ capitalize(type) }}
+      </button>
+    </div>
+  </section>
+  
+  <!-- Active Filters Indicator -->
+  <div class="filters-indicator" *ngIf="hasActiveFilters">
+    <span class="filter-label">Filtros activos:</span>
+    <span *ngIf="searchTerm" class="filter-tag">🔍 "{{ searchTerm }}"</span>
+    <span *ngIf="selectedType" class="filter-tag">{{ capitalize(selectedType) }}</span>
+    <button (click)="clearFilters()" class="clear-filters-btn">Limpiar todo</button>
+  </div>
+  
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="pokeball-loader"></div>
+    <p class="loading-text">Cargando Pokémon...</p>
+  </div>
+  
+  <!-- Not Found State (search returned no results) -->
+  <div class="not-found-state" *ngIf="!isLoading && notFound && !hasError">
+    <div class="not-found-icon">😢</div>
+    <p class="not-found-title">No se encontró ningún Pokémon con ese nombre</p>
+    <p class="not-found-hint" *ngIf="searchTerm">No hay resultados para "<strong>{{ searchTerm }}</strong>"</p>
+    <div class="not-found-actions">
+      <button (click)="clearFilters()" class="clear-btn">Limpiar filtro</button>
+      <button (click)="clearSearch()" class="secondary-btn" *ngIf="searchTerm">Limpiar solo búsqueda</button>
+    </div>
+  </div>
+  
+  <!-- Error State -->
+  <div class="error-state" *ngIf="hasError && !isLoading">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ errorMessage || 'No se pudo cargar la información de los Pokémon.' }}</p>
+    <div class="error-actions">
+      <button (click)="loadPokemons()" class="retry-btn">Reintentar</button>
+      <button *ngIf="hasActiveFilters" (click)="clearFilters()" class="secondary-btn">Limpiar filtros</button>
+    </div>
+  </div>
+  
+  <!-- Empty State (no results from search/filter, but no error) -->
+  <div class="empty-state" *ngIf="!isLoading && !hasError && filteredPokemons.length === 0 && pokemons.length > 0">
+    <div class="empty-icon">🔍</div>
+    <p class="empty-message">No se encontraron Pokémon</p>
+    <p class="empty-hint" *ngIf="searchTerm">Intenta con otro nombre</p>
+    <button (click)="clearFilters()" class="clear-btn">Limpiar filtros</button>
+  </div>
+  
+  <!-- Pokémon Grid -->
+  <div class="pokemon-grid" *ngIf="!isLoading && !hasError && filteredPokemons.length > 0">
+    <article 
+      *ngFor="let pokemon of filteredPokemons; trackBy: trackByPokemonId"
+      class="pokemon-card"
+      (click)="viewPokemonDetails(pokemon)"
+      (keydown.enter)="viewPokemonDetails(pokemon)"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'Ver detalles de ' + pokemon.name"
+    >
+      <!-- Card Header with ID -->
+      <div class="card-header">
+        <span class="pokemon-id">{{ formatPokemonId(pokemon.id) }}</span>
+        <span class="pokemon-favorite">☆</span>
+      </div>
+      
+      <!-- Pokémon Image -->
+      <div class="pokemon-image-container">
+        <img 
+          [src]="getPokemonImage(pokemon)" 
+          [alt]="pokemon.name"
+          class="pokemon-image"
+          (error)="onImageError($event, pokemon)"
+          loading="lazy"
+        >
+        <div class="image-glow"></div>
+      </div>
+      
+      <!-- Pokémon Info -->
+      <div class="pokemon-info">
+        <h3 class="pokemon-name">{{ capitalize(pokemon.name) }}</h3>
+        
+        <!-- Type Badges -->
+        <div class="type-badges">
+          <span 
+            *ngFor="let type of pokemon.types" 
+            class="type-badge"
+            [style.background-color]="getTypeColor(type)"
+          >
+            {{ capitalize(type) }}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Hover Overlay -->
+      <div class="card-overlay">
+        <span class="overlay-text">Ver detalles →</span>
+      </div>
+    </article>
+  </div>
+  
+  <!-- Pagination -->
+  <nav class="pagination" *ngIf="!isLoading && !hasError && filteredPokemons.length > 0" aria-label="Paginación">
+    <button 
+      (click)="setPage(currentPage - 1)"
+      [disabled]="currentPage === 0"
+      class="pagination-btn"
+      aria-label="Página anterior"
+    >
+      ← Anterior
+    </button>
+    <span class="pagination-info">
+      Página {{ currentPage + 1 }}
+    </span>
+    <button 
+      (click)="setPage(currentPage + 1)"
+      [disabled]="pokemons.length < pageSize"
+      class="pagination-btn"
+      aria-label="Siguiente página"
+    >
+      Siguiente →
+    </button>
+  </nav>
+  
+</div>
